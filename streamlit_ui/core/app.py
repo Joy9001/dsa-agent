@@ -1,0 +1,114 @@
+"""
+Core application class for Streamlit DSA Agent
+"""
+
+import asyncio
+import os
+import sys
+import streamlit as st
+from typing import Dict, Any
+
+# Add the current directory and dsa_agent module to the path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+streamlit_ui_dir = os.path.dirname(current_dir)
+project_root = os.path.dirname(streamlit_ui_dir)
+
+sys.path.insert(0, streamlit_ui_dir)
+sys.path.insert(0, os.path.join(project_root, "dsa_agent"))
+
+from dsa_agent.agent import DSAAgent
+from utils.session import initialize_session_state
+from utils.config import (
+    PAGE_TITLE,
+    PAGE_ICON,
+    LAYOUT,
+    SIDEBAR_STATE,
+    MAIN_DESCRIPTION,
+    CHAT_INPUT_PLACEHOLDER,
+)
+from components.sidebar import setup_sidebar
+from components.chat_display import display_chat_messages
+from handlers.response_streamer import ResponseStreamer
+
+
+class StreamlitDSAAgent:
+    """Main Streamlit interface for the DSA Agent"""
+
+    def __init__(self):
+        self.response_streamer = ResponseStreamer()
+        initialize_session_state()
+
+    def get_agent(self, model: str, debug_mode: bool) -> DSAAgent:
+        """Get or create DSA Agent instance"""
+        if (
+            st.session_state.agent is None
+            or st.session_state.get("current_model") != model
+            or st.session_state.get("current_debug") != debug_mode
+        ):
+            st.session_state.agent = DSAAgent(
+                user_id=st.session_state.user_id,
+                session_id=st.session_state.session_id,
+                model_id=model,
+                debug_mode=debug_mode,
+            )
+            st.session_state.current_model = model
+            st.session_state.current_debug = debug_mode
+
+        return st.session_state.agent
+
+    def run_app(self):
+        """Main application loop"""
+        self._setup_page_config()
+        self._setup_main_header()
+
+        # Setup sidebar and get configuration
+        config = setup_sidebar()
+
+        # Display existing messages
+        display_chat_messages()
+
+        # Handle chat input
+        self._handle_chat_input(config)
+
+    def _setup_page_config(self):
+        """Setup Streamlit page configuration"""
+        st.set_page_config(
+            page_title=PAGE_TITLE,
+            page_icon=PAGE_ICON,
+            layout=LAYOUT,
+            initial_sidebar_state=SIDEBAR_STATE,
+        )
+
+    def _setup_main_header(self):
+        """Setup main page header and description"""
+        st.title(f"{PAGE_ICON} {PAGE_TITLE}")
+        st.markdown(MAIN_DESCRIPTION)
+
+    def _handle_chat_input(self, config: Dict[str, Any]):
+        """Handle user chat input and agent response"""
+        if user_message := st.chat_input(CHAT_INPUT_PLACEHOLDER):
+            # Add user message to session state
+            st.session_state.messages.append({"role": "user", "content": user_message})
+
+            # Display user message
+            with st.chat_message("user"):
+                st.markdown(user_message)
+
+            # Get agent and generate response
+            agent = self.get_agent(config["model"], config["debug_mode"])
+
+            # Stream the response
+            full_response, execution_status = asyncio.run(
+                self.response_streamer.stream_response(
+                    agent, user_message, config["show_events"]
+                )
+            )
+
+            # Add assistant response to session state with execution status
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": full_response,
+                    "execution_status": execution_status,
+                }
+            )

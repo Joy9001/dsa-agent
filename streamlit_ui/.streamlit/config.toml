@@ -1,0 +1,51 @@
+[global]
+
+# Set to false to disable running on localhost
+developmentMode = false
+
+[server]
+
+# The port the server will listen on
+port = 8501
+
+# Address of the host to bind to
+address = "localhost"
+
+# Enable CORS protection
+enableCORS = false
+
+# Enable XSRF protection
+enableXsrfProtection = false
+
+# Max upload size
+maxUploadSize = 200
+
+runOnSave = true
+
+[browser]
+
+# Whether to open the browser window automatically
+gatherUsageStats = false
+
+# Browser to use
+serverAddress = "localhost"
+
+# Port to use
+serverPort = 8501
+
+[theme]
+
+# Base theme
+base = "dark"
+
+# Primary color
+primaryColor = "#FF6B6B"
+
+# Background color
+backgroundColor = "#0E1117"
+
+# Secondary background color
+secondaryBackgroundColor = "#262730"
+
+# Text color
+textColor = "#FAFAFA"
