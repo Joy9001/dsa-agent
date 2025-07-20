@@ -1,0 +1,22 @@
+[project]
+name = "dsa-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "agno>=1.7.4",
+    "fastapi[standard]>=0.116.1",
+    "google-genai>=1.26.0",
+    "mcp[cli]>=1.11.0",
+    "psycopg[binary]>=3.2.9",
+    "python-decouple>=3.8",
+    "sqlalchemy>=2.0.41",
+]
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["dsa_agent"]
