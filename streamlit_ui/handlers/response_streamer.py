@@ -115,18 +115,13 @@ class ResponseStreamer:
             self.message_placeholder.markdown(self.full_response + "▌")
 
     def _handle_run_completed(self, data: dict, current_time: float):
-        if self.event_steps and not self.event_steps[-1]["completed"]:
-            self.event_steps[-1]["completed"] = True
-            self.event_steps[-1]["duration"] = (
-                current_time - self.event_steps[-1]["start_time"]
-            )
         self.event_steps.append(
             {
                 "title": "Execution completed successfully",
                 "details": "Response generation finished",
                 "completed": True,
                 "start_time": current_time,
-                "duration": 0,
+                "duration": time.time() - self.start_time,
             }
         )
 
@@ -163,15 +158,11 @@ class ResponseStreamer:
                 "details": f"{len(tools)} tools need confirmation",
                 "completed": False,
                 "start_time": current_time,
+                "duration": 0,
             }
         )
 
     def _handle_run_continued(self, data: dict, current_time: float):
-        if self.event_steps and not self.event_steps[-1]["completed"]:
-            self.event_steps[-1]["completed"] = True
-            self.event_steps[-1]["duration"] = (
-                current_time - self.event_steps[-1]["start_time"]
-            )
         self.event_steps.append(
             {
                 "title": "▶️ Execution resumed",
@@ -190,30 +181,32 @@ class ResponseStreamer:
                 "details": "Analyzing and planning response",
                 "completed": False,
                 "start_time": current_time,
+                "duration": 0,
             }
         )
 
     def _handle_reasoning_step(self, data: dict, current_time: float):
         self.reasoning_steps += 1
-        if self.event_steps and "reasoning" in self.event_steps[-1]["title"].lower():
-             self.event_steps[-1]["details"] = f"Step {self.reasoning_steps}: Processing..."
-        else:
-            self.event_steps.append(
-                {
-                    "title": f"🧠 Reasoning step {self.reasoning_steps}",
-                    "details": "Processing logical connections",
-                    "completed": False,
-                    "start_time": current_time,
-                }
-            )
+        self.event_steps.append(
+            {
+                "title": f"🧠 Reasoning step {self.reasoning_steps}",
+                "details": "Processing logical connections",
+                "completed": False,
+                "start_time": current_time,
+                "duration": 0,
+            }
+        )
 
     def _handle_reasoning_completed(self, data: dict, current_time: float):
-        for step in reversed(self.event_steps):
-            if "reasoning" in step["title"].lower() and not step["completed"]:
-                step["completed"] = True
-                step["duration"] = current_time - step["start_time"]
-                step["details"] = f"Completed {self.reasoning_steps} reasoning steps"
-                break
+        self.event_steps.append(
+            {
+                "title": "🧠 Reasoning completed",
+                "details": f"Completed {self.reasoning_steps} reasoning steps",
+                "completed": True,
+                "start_time": current_time,
+                "duration": 0,
+            }
+        )
 
     def _handle_tool_call_started(self, data: dict, current_time: float):
         tool = data.get("tool")
@@ -228,6 +221,7 @@ class ResponseStreamer:
                     "details": f"Executing with args: {tool_args}",
                     "completed": False,
                     "start_time": current_time,
+                    "duration": 0,
                 }
             )
 
@@ -240,12 +234,15 @@ class ResponseStreamer:
             if tool_name in self.active_tools:
                 self.active_tools.remove(tool_name)
 
-            for step in reversed(self.event_steps):
-                if f"tool: {tool_name}" in step["title"].lower() and not step["completed"]:
-                    step["completed"] = True
-                    step["duration"] = current_time - step["start_time"]
-                    step["details"] = f"Tool execution completed successfully with args: {tool_args} and result: {result}"
-                    break
+            self.event_steps.append(
+                {
+                    "title": f"🔧 Tool: {tool_name} completed",
+                    "details": f"Tool execution completed successfully with args: {tool_args} and result: {result}",
+                    "completed": True,
+                    "start_time": current_time,
+                    "duration": 0,
+                }
+            )
             self.current_tool = None
 
     def _handle_memory_update_started(self, data: dict, current_time: float):
@@ -255,16 +252,20 @@ class ResponseStreamer:
                 "details": "Storing conversation context",
                 "completed": False,
                 "start_time": current_time,
+                "duration": 0,
             }
         )
 
     def _handle_memory_update_completed(self, data: dict, current_time: float):
-        for step in reversed(self.event_steps):
-            if "memory" in step["title"].lower() and not step["completed"]:
-                step["completed"] = True
-                step["duration"] = current_time - step["start_time"]
-                step["details"] = "Memory updated successfully"
-                break
+        self.event_steps.append(
+            {
+                "title": "💾 Memory updated",
+                "details": "Memory updated successfully",
+                "completed": True,
+                "start_time": current_time,
+                "duration": 0,
+            }
+        )
 
     def _handle_unknown_event(self, data: dict, current_time: float):
         raw_content = data.get("raw_content")
@@ -282,7 +283,7 @@ class ResponseStreamer:
             log_html += f"<div style='padding: 2px 0; color: #262730;'>{status_icon} <strong style='color: #262730;'>{step['title']}</strong>"
             if step.get("details"):
                 log_html += f" - <span style='color: #6c757d;'>{step['details']}</span>"
-            if step.get("duration") and step["completed"]:
+            if step.get("duration") is not None:  # Check for None explicitly
                 log_html += f" <em style='color: #28a745;'>({step['duration']:.2f}s)</em>"
             log_html += "</div>"
         log_html += "</div>"
@@ -290,21 +291,16 @@ class ResponseStreamer:
 
     def _finalize_execution(self):
         execution_time = time.time() - self.start_time
-        if self.event_steps:
-            for step in self.event_steps:
-                if not step["completed"]:
-                    step["completed"] = True
-                    step["duration"] = time.time() - step["start_time"]
-            self.event_steps.append(
-                {
-                    "title": "🎉 All processing completed",
-                    "details": f"Total execution time: {execution_time:.2f}s",
-                    "completed": True,
-                    "start_time": time.time(),
-                    "duration": 0,
-                }
-            )
-            self._update_event_log()
+        self.event_steps.append(
+            {
+                "title": "🎉 All processing completed",
+                "details": f"Total execution time: {execution_time:.2f}s",
+                "completed": True,
+                "start_time": time.time(),
+                "duration": 0,
+            }
+        )
+        self._update_event_log()
 
     def _handle_stream_error(self, error: Exception):
         error_msg = f"**Streaming Error**: {str(error)}"
