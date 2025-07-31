@@ -10,7 +10,7 @@ from logger import logger
 from agent.mcp_url import GH_MCP_URL, LC_MCP_URL
 
 from .memory import agent_memory, agent_storage
-from .prompt import AGENT_DESCRIPTION
+from .prompt import AGENT_DESCRIPTION, AGENT_INSTRUCTION
 
 
 class DSAAgent:
@@ -84,6 +84,7 @@ class DSAAgent:
                 name="DSA Agent",
                 model=Gemini(id=model_id, api_key=cfg.GEMINI_API_KEY),
                 description=AGENT_DESCRIPTION,
+                instructions=[AGENT_INSTRUCTION],
                 user_id=user_id,
                 session_id=session_id,
                 tools=[ThinkingTools(think=True, add_instructions=True), *tools],
