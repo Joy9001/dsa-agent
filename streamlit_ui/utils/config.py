@@ -3,7 +3,7 @@ Configuration settings for the Streamlit DSA Agent
 """
 
 # Model options
-MODEL_OPTIONS = ["gemini-2.5-flash"]
+MODEL_OPTIONS = ["gemini-2.5-flash", "gemini-2.5-pro"]
 DEFAULT_MODEL = "gemini-2.5-flash"
 
 # UI Configuration
