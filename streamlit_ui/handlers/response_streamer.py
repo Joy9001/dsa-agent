@@ -1,7 +1,6 @@
-
 import time
 from typing import Any, Dict, Tuple
-
+import html
 import streamlit as st
 
 
@@ -100,7 +99,7 @@ class ResponseStreamer:
         model_name = data.get("model", "Unknown Model")
         self.event_steps.append(
             {
-                "title": f"Starting execution with {model_name}",
+                "title": f"🚀 Starting execution with {model_name}",
                 "details": "Initializing agent and tools",
                 "completed": True,
                 "start_time": current_time,
@@ -117,7 +116,7 @@ class ResponseStreamer:
     def _handle_run_completed(self, data: dict, current_time: float):
         self.event_steps.append(
             {
-                "title": "Execution completed successfully",
+                "title": "✅ Execution completed successfully",
                 "details": "Response generation finished",
                 "completed": True,
                 "start_time": current_time,
@@ -279,14 +278,21 @@ class ResponseStreamer:
 
         log_html = "<div style='background-color: #f0f2f6; padding: 10px; border-radius: 5px; margin: 10px 0; color: #262730;'>"
         for step in self.event_steps:
-            status_icon = "✅" if step["completed"] else "🔄"
-            log_html += f"<div style='padding: 2px 0; color: #262730;'>{status_icon} <strong style='color: #262730;'>{step['title']}</strong>"
+            title = html.escape(step["title"])
+            log_html += f"<div style='padding: 2px 0; color: #262730;'> <strong style='color: #262730;'>{title}</strong>"
             if step.get("details"):
-                log_html += f" - <span style='color: #6c757d;'>{step['details']}</span>"
-            if step.get("duration") is not None:  # Check for None explicitly
-                log_html += f" <em style='color: #28a745;'>({step['duration']:.2f}s)</em>"
+                details = html.escape(step["details"])
+                log_html += f" - <span style='color: #6c757d;'>{details}</span>"
+            if step.get("duration") is not None:
+                log_html += (
+                    f" <em style='color: #28a745;'>({step['duration']:.2f}s)</em>"
+                )
             log_html += "</div>"
         log_html += "</div>"
+
+        # Optional: debug output
+        # print(log_html.encode("unicode_escape").decode())
+
         self.event_log.markdown(log_html, unsafe_allow_html=True)
 
     def _finalize_execution(self):

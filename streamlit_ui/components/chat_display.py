@@ -25,10 +25,9 @@ def _display_event_log(event_steps: list):
     """Display event log steps"""
     with st.expander("🔄 Processing Steps", expanded=False):
         for step in event_steps:
-            status_icon = "✅" if step["completed"] else "🔄"
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.write(f"{status_icon} **{step['title']}**")
+                st.write(f"**{step['title']}**")
                 if step.get("details"):
                     st.caption(step["details"])
             with col2:
