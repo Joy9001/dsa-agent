@@ -11,7 +11,7 @@ from agent.mcp_url import GH_MCP_URL, LC_MCP_URL
 
 from .memory import agent_memory, agent_storage
 from .prompt import AGENT_DESCRIPTION, AGENT_INSTRUCTION
-
+from monitor import time_component
 
 class DSAAgent:
     def __init__(
@@ -33,6 +33,7 @@ class DSAAgent:
         self.mcp_tools = self._get_mcp_tools()
         logger.info(f"DSA Agent initialized successfully for user {user_id}")
 
+    @time_component()
     def _safe_get_tool_info(self, tool) -> dict | None:
         """Safely extract tool information for serialization"""
         if tool is None:
@@ -48,6 +49,7 @@ class DSAAgent:
 
         return tool_info
 
+    @time_component()
     def _get_mcp_tools(self) -> MultiMCPTools:
         logger.debug("Retrieving MCP URLs for LeetCode and GitHub")
         logger.debug(f"LeetCode MCP URL: {LC_MCP_URL}")
@@ -61,6 +63,7 @@ class DSAAgent:
         logger.debug("MCP tools initialized successfully")
         return mcp_tools
 
+    @time_component()
     def _get_agent(
         self,
         user_id: str,
