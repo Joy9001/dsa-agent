@@ -13,7 +13,7 @@ def initialize_session_state():
         st.session_state.messages = []
 
     if "user_id" not in st.session_state:
-        st.session_state.user_id = str(uuid.uuid4())
+        st.session_state.user_id = "sample-user-123" # change this to a unique user ID
 
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())

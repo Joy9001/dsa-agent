@@ -93,8 +93,8 @@ class DSAAgent:
                 tools=[ThinkingTools(think=True, add_instructions=True), *tools],
                 # Store memories in a database
                 memory=agent_memory,
-                # Give the Agent the ability to update memories
-                enable_agentic_memory=True,
+                # # Give the Agent the ability to update memories
+                # enable_agentic_memory=True,
                 # OR - Run the MemoryManager after each response
                 enable_user_memories=True,
                 # Store the chat history in the database
