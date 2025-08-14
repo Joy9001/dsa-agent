@@ -11,10 +11,11 @@ agent_router = APIRouter(prefix="/agents", tags=["Agents"])
 
 class Model(StrEnum):
     gemini_2_5_flash = "gemini-2.5-flash"
+    gemini_2_5_pro = "gemini-2.5-pro"
 
 
 class RunRequest(BaseModel):
-    """Request model for an running an agent"""
+    """Request model for running the agent"""
 
     message: str
     stream: bool = True
@@ -23,13 +24,12 @@ class RunRequest(BaseModel):
     session_id: str | None = None
 
 
-@agent_router.post("/{agent_id}/runs", status_code=status.HTTP_200_OK)
+@agent_router.post("/run", status_code=status.HTTP_200_OK)
 async def create_agent_run(body: RunRequest):
     """
     Sends a message to a specific agent and returns the response.
 
     Args:
-        agent_id: The ID of the agent to interact with
         body: Request parameters including the message
 
     Returns:
