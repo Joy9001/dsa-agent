@@ -238,24 +238,10 @@ Model Context Protocol tools for external API access:
 
 ### REST API Endpoints
 
-**Start Agent Interaction:**
-```bash
-POST /v1/agents/{agent_id}/runs
-Content-Type: application/json
-
-{
-  "message": "I solved problem #1 Two Sum on LeetCode",
-  "stream": true,
-  "model": "gemini-2.5-flash", 
-  "user_id": "user123",
-  "session_id": "session456"
-}
-```
-
 **Streaming Response:**
 ```bash
 # Returns Server-Sent Events stream
-curl -X POST "http://localhost:8000/v1/agents/dsa/runs" \
+curl -X POST "http://localhost:8000/v1/agents/run" \
   -H "Content-Type: application/json" \
   -d '{
     "message": "Help me create notes for Binary Search problem",
@@ -267,7 +253,7 @@ curl -X POST "http://localhost:8000/v1/agents/dsa/runs" \
 
 **Non-Streaming Response:**
 ```bash
-curl -X POST "http://localhost:8000/v1/agents/dsa/runs" \
+curl -X POST "http://localhost:8000/v1/agents/run" \
   -H "Content-Type: application/json" \
   -d '{
     "message": "I need help organizing my LeetCode solutions",
@@ -469,18 +455,10 @@ Or set environment variable:
 export LOG_LEVEL=DEBUG
 ```
 
-## 📝 License
-
-[Add your license information here]
-
-## 🤝 Contributing
-
-[Add contribution guidelines here]
-
 ## 📞 Support
 
-[Add support information here]
+[Email Me](mailto:joymridha939@gmail.com)
 
 ---
 
-**Built with ❤️ using [Agno](https://github.com/phidatahq/phidata) framework**
+**Built with ❤️ using [Agno](https://github.com/agno-agi/agno) framework**
