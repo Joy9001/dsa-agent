@@ -38,10 +38,6 @@ cd .. && pip install -r requirements.txt
 3. **Run the application:**
 
    ```bash
-   # Using the convenience script
-   ./run.sh
-   
-   # Or manually
    streamlit run app.py
    ```
 
@@ -76,7 +72,11 @@ cd .. && pip install -r requirements.txt
 Make sure these are set in your main project (the agent uses them):
 
 - `GEMINI_API_KEY`: Your Google Gemini API key
-- Other environment variables as required by your agent
+- `PG_CONN_STR`: Your PostgreSQL connection string
+- `LC_SESSION`: Your LeetCode session cookie
+- `SMITHERY_API_KEY`: Your Smithery API key
+- `SMITHERY_PROFILE`: Your Smithery profile ID
+- `GH_TOKEN`: Your GitHub token
 
 ### Streamlit Configuration
 
@@ -90,13 +90,14 @@ The UI comes with a pre-configured `.streamlit/config.toml` file with:
 
 ```bash
 streamlit_ui/
+├── components/            # UI components
+├── core/                  # Core App
+├── handlers/              # Event Response Handlers
+├── utils/                 # Utility functions
 ├── app.py                 # Main Streamlit application
-├── requirements.txt       # UI-specific dependencies
-├── run.sh                # Convenience script to run the app
-├── README.md             # This file
+├── README.md             
 ├── .streamlit/
-│   └── config.toml       # Streamlit configuration
-└── screenshots/          # UI screenshots (if any)
+│   └── config.toml        # Streamlit configuration
 ```
 
 ## 🔧 Architecture
@@ -147,7 +148,7 @@ The UI directly imports and uses the `DSAAgent` class from the main project, pro
 1. **Import Errors**:
 
    ```bash
-   ImportError: No module named 'agent.dsa_agent'
+   ImportError: No module named 'agent.agent'
    ```
 
    **Solution**: Make sure you're running from the `streamlit_ui` directory and the main project dependencies are installed.
