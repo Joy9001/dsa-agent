@@ -78,6 +78,9 @@ The DSA Agent is built on a modern, scalable architecture:
    
    # Or using uv (recommended)
    uv sync
+   
+   # Or install as editable package
+   pip install -e .
    ```
 
 3. **Set up environment variables:**
@@ -121,7 +124,12 @@ The DSA Agent is built on a modern, scalable architecture:
    ```bash
    # From the project root
    cd dsa_agent
+   
+   # Make sure uvicorn is available (should be installed with FastAPI)
    uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+   
+   # Or using Python module syntax
+   python -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
 6. **Access the API:**
@@ -271,6 +279,7 @@ curl -X POST "http://localhost:8000/v1/agents/dsa/runs" \
 
 ### Python SDK Usage
 
+**Option 1: Direct Import (from dsa_agent directory)**
 ```python
 import asyncio
 import os
@@ -298,6 +307,22 @@ async def main():
     ):
         if event.get("event") == "content":
             print(event["data"]["content"])
+
+asyncio.run(main())
+```
+
+**Option 2: Package Installation (if installed with `pip install -e .`)**
+```python
+import asyncio
+from dsa_agent.agent.dsa_agent import DSAAgent
+
+async def main():
+    agent = DSAAgent(
+        user_id="your_user_id",
+        session_id="session_id"
+    )
+    
+    # Your agent interactions here...
 
 asyncio.run(main())
 ```
