@@ -2,7 +2,7 @@ import logging
 
 from rich.logging import RichHandler
 
-from config import LOG_LEVEL
+from dsa_agent.config import LOG_LEVEL
 
 
 def setup_logger(name: str = "dsa_agent", level: str = LOG_LEVEL) -> logging.Logger:

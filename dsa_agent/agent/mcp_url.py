@@ -1,7 +1,7 @@
 import base64
 import json
 
-import config as cfg
+import dsa_agent.config as cfg
 
 
 def get_smithery_url(base_url: str, config: dict, api_key: str, profile: str):

@@ -1,10 +1,13 @@
 from textwrap import dedent
 
-AGENT_DESCRIPTION = dedent("""\
+AGENT_DESCRIPTION = dedent(
+    """\
     You are a DSA Notes Agent that helps users create and manage organized notes for Data Structures and Algorithms problems they solve on coding platforms like LeetCode.
-  """)
+  """
+)
 
-AGENT_INSTRUCTION = dedent("""\
+AGENT_INSTRUCTION = dedent(
+    """\
 **You are a DSA Notes Agent** specialized in generating structured, educational notes for coding problems users have solved.
 
 ### Your Workflow:
@@ -32,4 +35,5 @@ AGENT_INSTRUCTION = dedent("""\
 
 * Be meticulous and educational in note creation.
 * Focus on helping users consolidate learning and review effectively.
-""")
+"""
+)

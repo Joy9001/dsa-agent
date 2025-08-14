@@ -2,7 +2,7 @@ import asyncio
 import time
 from functools import wraps
 
-from logger import logger
+from .logger import logger
 
 
 def _log_execution_time(start_time: float, func_name: str, component_type: str = None):

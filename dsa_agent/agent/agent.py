@@ -1,17 +1,18 @@
 from typing import AsyncGenerator
 
-import config as cfg
 from agno.agent import Agent
 from agno.models.google import Gemini
 from agno.tools.mcp import MultiMCPTools
 from agno.tools.thinking import ThinkingTools
-from logger import logger
 
-from agent.mcp_url import GH_MCP_URL, LC_MCP_URL
+import dsa_agent.config as cfg
+from dsa_agent.logger import logger
+from dsa_agent.monitor import time_component
 
+from .mcp_url import GH_MCP_URL, LC_MCP_URL
 from .memory import agent_memory, agent_storage
 from .prompt import AGENT_DESCRIPTION, AGENT_INSTRUCTION
-from monitor import time_component
+
 
 class DSAAgent:
     def __init__(

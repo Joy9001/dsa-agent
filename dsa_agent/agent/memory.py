@@ -2,9 +2,9 @@ from agno.memory.v2.db.postgres import PostgresMemoryDb
 from agno.memory.v2.memory import Memory
 from agno.models.google import Gemini
 from agno.storage.postgres import PostgresStorage
+from dsa_agent.db.get_db import get_db_url
 
-import config as cfg
-from db.get_db import get_db_url
+import dsa_agent.config as cfg
 
 db_url = get_db_url()
 

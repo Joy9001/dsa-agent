@@ -1,4 +1,4 @@
-import config as cfg
+import dsa_agent.config as cfg
 
 
 def get_db_url() -> str:
