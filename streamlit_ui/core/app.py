@@ -3,32 +3,23 @@ Core application class for Streamlit DSA Agent
 """
 
 import asyncio
-import os
-import sys
+from typing import Any, Dict
+
 import streamlit as st
-from typing import Dict, Any
-
-# Add the current directory and dsa_agent module to the path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-streamlit_ui_dir = os.path.dirname(current_dir)
-project_root = os.path.dirname(streamlit_ui_dir)
-
-sys.path.insert(0, streamlit_ui_dir)
-sys.path.insert(0, os.path.join(project_root, "dsa_agent"))
+from components.chat_display import display_chat_messages
+from components.sidebar import setup_sidebar
+from handlers.response_streamer import ResponseStreamer
+from utils.config import (
+    CHAT_INPUT_PLACEHOLDER,
+    LAYOUT,
+    MAIN_DESCRIPTION,
+    PAGE_ICON,
+    PAGE_TITLE,
+    SIDEBAR_STATE,
+)
+from utils.session import initialize_session_state
 
 from dsa_agent.agent import DSAAgent
-from utils.session import initialize_session_state
-from utils.config import (
-    PAGE_TITLE,
-    PAGE_ICON,
-    LAYOUT,
-    SIDEBAR_STATE,
-    MAIN_DESCRIPTION,
-    CHAT_INPUT_PLACEHOLDER,
-)
-from components.sidebar import setup_sidebar
-from components.chat_display import display_chat_messages
-from handlers.response_streamer import ResponseStreamer
 
 
 class StreamlitDSAAgent:
