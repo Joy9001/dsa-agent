@@ -12,7 +12,12 @@ from utils.config import (
     MODEL_OPTIONS,
     USAGE_INSTRUCTIONS,
 )
-from utils.session import clear_execution_status, get_session_statistics, reset_session
+from utils.session import (
+    clear_execution_status,
+    get_session_statistics,
+    reset_session,
+    update_user_id,
+)
 
 
 def setup_sidebar() -> Dict[str, Any]:
@@ -74,6 +79,19 @@ def setup_sidebar() -> Dict[str, Any]:
     if not gh_token:
         st.sidebar.warning("⚠️ GitHub token is required for GitHub MCP tools")
 
+    # Create config dictionary
+    config = {
+        "model": selected_model,
+        "debug_mode": debug_mode,
+        "show_events": show_events,
+        "lc_site": lc_site,
+        "lc_session": lc_session,
+        "gh_token": gh_token,
+    }
+    
+    # Update user ID based on current configuration
+    update_user_id(config)
+
     # Session management
     _setup_session_management()
 
@@ -83,14 +101,7 @@ def setup_sidebar() -> Dict[str, Any]:
     # Instructions
     _setup_instructions()
 
-    return {
-        "model": selected_model,
-        "debug_mode": debug_mode,
-        "show_events": show_events,
-        "lc_site": lc_site,
-        "lc_session": lc_session,
-        "gh_token": gh_token,
-    }
+    return config
 
 
 def _setup_session_management():
@@ -115,8 +126,12 @@ def _setup_session_management():
 def _setup_session_info():
     """Display current session information"""
     with st.sidebar.expander("📋 Session Info"):
-        st.text(f"User ID: {st.session_state.user_id[:8]}...")
-        st.text(f"Session ID: {st.session_state.session_id[:8]}...")
+        if st.session_state.user_id:
+            user_id_display = st.session_state.user_id
+            st.text(f"User ID: {user_id_display}")
+        else:
+            st.text("User ID: Not set")
+        st.text(f"Session ID: {st.session_state.session_id}")
 
         # Show session statistics
         stats = get_session_statistics()

@@ -2,9 +2,11 @@
 Session management utilities for Streamlit DSA Agent
 """
 
+import hashlib
 import uuid
+from typing import Any, Dict
+
 import streamlit as st
-from typing import Dict, Any
 
 
 def initialize_session_state():
@@ -13,13 +15,34 @@ def initialize_session_state():
         st.session_state.messages = []
 
     if "user_id" not in st.session_state:
-        st.session_state.user_id = "sample-user-123" # change this to a unique user ID
+        st.session_state.user_id = None  # Will be set when config is available
 
     if "session_id" not in st.session_state:
         st.session_state.session_id = str(uuid.uuid4())
 
     if "agent" not in st.session_state:
         st.session_state.agent = None
+
+
+def generate_user_id(config: Dict[str, Any]) -> str:
+    """Generate a unique user ID based on user configurations"""
+    # Create a string from the configuration values
+    config_string = f"{config.get('model', '')}-{config.get('lc_site', '')}-{bool(config.get('lc_session', ''))}-{bool(config.get('gh_token', ''))}"
+    
+    # Create a hash of the configuration
+    config_hash = hashlib.md5(config_string.encode()).hexdigest()[:12]
+    
+    # Return a user-friendly ID
+    return f"user-{config_hash}"
+
+
+def update_user_id(config: Dict[str, Any]):
+    """Update user ID based on current configuration"""
+    new_user_id = generate_user_id(config)
+
+    if st.session_state.user_id != new_user_id:
+        st.session_state.user_id = new_user_id
+
 
 
 def reset_session():
