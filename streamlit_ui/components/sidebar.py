@@ -2,16 +2,17 @@
 Sidebar component for Streamlit DSA Agent
 """
 
+from typing import Any, Dict
+
 import streamlit as st
-from typing import Dict, Any
-from utils.session import reset_session, clear_execution_status, get_session_statistics
 from utils.config import (
-    MODEL_OPTIONS,
-    DEFAULT_MODEL,
     DEFAULT_DEBUG_MODE,
+    DEFAULT_MODEL,
     DEFAULT_SHOW_EVENTS,
+    MODEL_OPTIONS,
     USAGE_INSTRUCTIONS,
 )
+from utils.session import clear_execution_status, get_session_statistics, reset_session
 
 
 def setup_sidebar() -> Dict[str, Any]:
@@ -40,6 +41,39 @@ def setup_sidebar() -> Dict[str, Any]:
         help="Display detailed event information during agent execution",
     )
 
+    # MCP Configuration
+    st.sidebar.subheader("🔗 MCP Configuration")
+    
+    # LeetCode configuration
+    lc_site = st.sidebar.selectbox(
+        "LeetCode Site",
+        ["global", "cn"],
+        index=0,
+        help="Select LeetCode site region",
+    )
+    
+    lc_session = st.sidebar.text_input(
+        "LeetCode Session",
+        type="password",
+        help="Enter your LeetCode session token",
+        placeholder="LEETCODE_SESSION value from cookies",
+    )
+    
+    # GitHub configuration
+    gh_token = st.sidebar.text_input(
+        "GitHub Token",
+        type="password",
+        help="Enter your GitHub personal access token",
+        placeholder="ghp_xxxxxxxxxxxxxxxxxxxx",
+    )
+    
+    # Show warnings if credentials are missing
+    if not lc_session:
+        st.sidebar.warning("⚠️ LeetCode session token is required for LeetCode MCP tools")
+    
+    if not gh_token:
+        st.sidebar.warning("⚠️ GitHub token is required for GitHub MCP tools")
+
     # Session management
     _setup_session_management()
 
@@ -53,6 +87,9 @@ def setup_sidebar() -> Dict[str, Any]:
         "model": selected_model,
         "debug_mode": debug_mode,
         "show_events": show_events,
+        "lc_site": lc_site,
+        "lc_session": lc_session,
+        "gh_token": gh_token,
     }
 
 

@@ -29,21 +29,31 @@ class StreamlitDSAAgent:
         self.response_streamer = ResponseStreamer()
         initialize_session_state()
 
-    def get_agent(self, model: str, debug_mode: bool) -> DSAAgent:
+    def get_agent(self, config: Dict[str, Any]) -> DSAAgent:
         """Get or create DSA Agent instance"""
+        model = config["model"]
+        debug_mode = config["debug_mode"]
+        lc_site = config["lc_site"]
+        lc_session = config["lc_session"]
+        gh_token = config["gh_token"]
+        
+        # Create a unique key for the agent configuration
+        agent_key = f"{model}_{debug_mode}_{lc_site}_{bool(lc_session)}_{bool(gh_token)}"
+        
         if (
             st.session_state.agent is None
-            or st.session_state.get("current_model") != model
-            or st.session_state.get("current_debug") != debug_mode
+            or st.session_state.get("current_agent_key") != agent_key
         ):
             st.session_state.agent = DSAAgent(
                 user_id=st.session_state.user_id,
                 session_id=st.session_state.session_id,
                 model_id=model,
                 debug_mode=debug_mode,
+                lc_site=lc_site,
+                lc_session=lc_session,
+                gh_token=gh_token,
             )
-            st.session_state.current_model = model
-            st.session_state.current_debug = debug_mode
+            st.session_state.current_agent_key = agent_key
 
         return st.session_state.agent
 
@@ -86,7 +96,7 @@ class StreamlitDSAAgent:
                 st.markdown(user_message)
 
             # Get agent and generate response
-            agent = self.get_agent(config["model"], config["debug_mode"])
+            agent = self.get_agent(config)
 
             # Stream the response
             full_response, execution_status = asyncio.run(

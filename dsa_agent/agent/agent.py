@@ -6,12 +6,10 @@ from agno.tools.mcp import MultiMCPTools
 from agno.tools.thinking import ThinkingTools
 
 import dsa_agent.config as cfg
+from dsa_agent.agent.memory import agent_memory, agent_storage
+from dsa_agent.agent.prompt import AGENT_DESCRIPTION, AGENT_INSTRUCTION
 from dsa_agent.logger import logger
 from dsa_agent.monitor import time_component
-
-from .mcp_url import GH_MCP_URL, LC_MCP_URL
-from .memory import agent_memory, agent_storage
-from .prompt import AGENT_DESCRIPTION, AGENT_INSTRUCTION
 
 
 class DSAAgent:
@@ -21,6 +19,9 @@ class DSAAgent:
         session_id: str,
         model_id: str = "gemini-2.5-flash",
         debug_mode: bool = True,
+        lc_site: str | None = None,
+        lc_session: str | None = None,
+        gh_token: str | None = None,
     ):
         logger.info(
             f"Initializing DSA Agent for user_id={user_id}, session_id={session_id}, model_id={model_id}, debug_mode={debug_mode}"
@@ -29,6 +30,9 @@ class DSAAgent:
         self.session_id = session_id
         self.model_id = model_id
         self.debug_mode = debug_mode
+        self.lc_site = lc_site
+        self.lc_session = lc_session
+        self.gh_token = gh_token
 
         logger.debug("Setting up MCP tools for DSA Agent")
         self.mcp_tools = self._get_mcp_tools()
@@ -52,13 +56,43 @@ class DSAAgent:
 
     @time_component()
     def _get_mcp_tools(self) -> MultiMCPTools:
-        logger.debug("Retrieving MCP URLs for LeetCode and GitHub")
-        logger.debug(f"LeetCode MCP URL: {LC_MCP_URL}")
-        logger.debug(f"GitHub MCP URL: {GH_MCP_URL}")
+        logger.debug("Generating MCP URLs for LeetCode and GitHub")
+        
+        # Import the URL generation function and config
+        import dsa_agent.config as cfg
+
+        from .mcp_url import get_smithery_url
+        
+        # Use provided values or fall back to config defaults
+        lc_site = self.lc_site or cfg.LC_SITE
+        lc_session = self.lc_session or cfg.LC_SESSION
+        gh_token = self.gh_token or cfg.GH_TOKEN
+        
+        # Generate LeetCode MCP URL
+        lc_mcp_url = get_smithery_url(
+            base_url=cfg.LC_MCP_BASE_URL, #type: ignore
+            config={
+                "site": lc_site,
+                "session": lc_session,
+            },
+            api_key=cfg.SMITHERY_API_KEY, #type: ignore
+            profile=cfg.SMITHERY_PROFILE, #type: ignore
+        )
+        
+        # Generate GitHub MCP URL
+        gh_mcp_url = get_smithery_url(
+            base_url=cfg.GH_MCP_BASE_URL, #type: ignore
+            config={"githubPersonalAccessToken": gh_token},
+            api_key=cfg.SMITHERY_API_KEY, #type: ignore
+            profile=cfg.SMITHERY_PROFILE, #type: ignore
+        )
+        
+        logger.debug(f"LeetCode MCP URL: {lc_mcp_url}")
+        logger.debug(f"GitHub MCP URL: {gh_mcp_url}")
 
         logger.info("Creating MultiMCPTools instance with streamable-http transport")
         mcp_tools = MultiMCPTools(
-            urls=[LC_MCP_URL, GH_MCP_URL],
+            urls=[lc_mcp_url, gh_mcp_url],
             urls_transports=["streamable-http", "streamable-http"],
         )
         logger.debug("MCP tools initialized successfully")
@@ -86,7 +120,7 @@ class DSAAgent:
         try:
             agent = Agent(
                 name="DSA Agent",
-                model=Gemini(id=model_id, api_key=cfg.GEMINI_API_KEY),
+                model=Gemini(id=model_id, api_key=cfg.GEMINI_API_KEY), #type: ignore
                 description=AGENT_DESCRIPTION,
                 instructions=[AGENT_INSTRUCTION],
                 user_id=user_id,
@@ -251,7 +285,7 @@ class DSAAgent:
                         event_data.update(
                             {
                                 "tool": self._safe_get_tool_info(tool),
-                                "result": tool.result,
+                                "result": tool.result if tool and hasattr(tool, "result") else None,
                             }
                         )
                         content = {"event": "tool_call_completed", "data": event_data}
