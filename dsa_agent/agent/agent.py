@@ -19,12 +19,12 @@ class DSAAgent:
         self,
         user_id: str,
         session_id: str,
+        gemini_api_key: str,
+        lc_session: str,
+        gh_token: str,
         model_id: str = "gemini-2.5-flash",
         debug_mode: bool = True,
-        lc_site: str | None = None,
-        lc_session: str | None = None,
-        gh_token: str | None = None,
-        gemini_api_key: str | None = None,
+        lc_site: str = "global",
     ):
         logger.info(
             f"Initializing DSA Agent for user_id={user_id}, session_id={session_id}, model_id={model_id}, debug_mode={debug_mode}"
