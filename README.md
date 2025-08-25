@@ -135,11 +135,7 @@ Access the API:
 #### Option 2: Streamlit Web Interface
 
 ```bash
-# Navigate to the streamlit_ui directory
-cd streamlit_ui
-
-# Start the Streamlit app
-streamlit run app.py
+streamlit run streamlit_ui/app.py
 ```
 
 Access the web interface at: <http://localhost:8501>
