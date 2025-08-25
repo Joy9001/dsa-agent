@@ -21,20 +21,23 @@ CHAT_INPUT_PLACEHOLDER = "Tell me about a problem you solved or need help with..
 
 # Instructions
 USAGE_INSTRUCTIONS = """
-**Setup Required:**
-1. **LeetCode Session**: Enter your LeetCode session token (found in browser cookies)
-2. **GitHub Token**: Enter your GitHub personal access token
+**Quick Setup:**
+1. Add your Gemini API key
+2. Add your LeetCode session token
+3. Add your GitHub personal access token
 
-**Usage:**
-1. **Problem Solved**: Mention when you've solved a coding problem
-2. **Platform**: Specify the platform (e.g., LeetCode, HackerRank)
-3. **Problem Details**: Share problem number or name
-4. **Notes Creation**: The agent will help create organized notes
+**How to Use:**
+Just tell me about any LeetCode problem you've solved! I'll automatically:
+- Create organized notes in markdown format
+- Set up a GitHub repository if needed
+- Save everything with proper naming and structure
 
-**Example Messages:**
-- "I solved LeetCode problem #1 Two Sum"
-- "Help me create notes for the binary search problem I just solved"
-- "I completed problem 206 on LeetCode about reversing a linked list"
+**Examples:**
+- "I solved LeetCode #1 Two Sum"
+- "Help me create notes for problem 206 Reverse Linked List"
+- "Just completed Binary Search problem #704"
+
+That's it! 🚀
 """
 
 # UI Messages
