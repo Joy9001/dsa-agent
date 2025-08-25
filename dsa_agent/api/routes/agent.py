@@ -1,5 +1,7 @@
+import json
 import uuid
 from enum import StrEnum
+from typing import AsyncGenerator
 
 from agent.agent import DSAAgent
 from fastapi import APIRouter, HTTPException, status
@@ -10,6 +12,17 @@ from pydantic import BaseModel
 from utils.gen_userid import generate_user_id
 
 agent_router = APIRouter(prefix="/agents", tags=["Agents"])
+
+
+async def stream_json_response(
+    agent_stream: AsyncGenerator,
+) -> AsyncGenerator[str, None]:
+    """Convert agent dictionary responses to JSON strings for streaming"""
+    async for content in agent_stream:
+        if isinstance(content, dict):
+            yield json.dumps(content) + "\n"
+        else:
+            yield str(content) + "\n"
 
 
 class Model(StrEnum):
@@ -63,9 +76,9 @@ async def create_agent_run(body: RunRequest):
 
     if body.stream:
         return StreamingResponse(
-            agent.astream_agent(msg=body.message),
+            stream_json_response(agent.astream_agent(msg=body.message)),
             media_type="text/event-stream",
         )
     else:
         response = await agent.arun_agent(msg=body.message)
-        return response
+        return {"response": response, "session_id": session_id, "user_id": user_id}
