@@ -46,9 +46,20 @@ def setup_sidebar() -> Dict[str, Any]:
         help="Display detailed event information during agent execution",
     )
 
-    # MCP Configuration
-    st.sidebar.subheader("🔗 MCP Configuration")
-    
+    # API Configuration
+    st.sidebar.subheader("🔑 API Keys")
+
+    # Gemini API Key configuration
+    gemini_api_key = st.sidebar.text_input(
+        "Gemini API Key *",
+        type="password",
+        help="Enter your Gemini API key (Required)",
+        placeholder="Your Gemini API key",
+    )
+
+    # MCP Services Configuration
+    st.sidebar.subheader("🔗 MCP Services")
+
     # LeetCode configuration
     lc_site = st.sidebar.selectbox(
         "LeetCode Site",
@@ -56,39 +67,55 @@ def setup_sidebar() -> Dict[str, Any]:
         index=0,
         help="Select LeetCode site region",
     )
-    
+
     lc_session = st.sidebar.text_input(
-        "LeetCode Session",
+        "LeetCode Session *",
         type="password",
-        help="Enter your LeetCode session token",
+        help="Enter your LeetCode session token (Required)",
         placeholder="LEETCODE_SESSION value from cookies",
     )
-    
+
     # GitHub configuration
     gh_token = st.sidebar.text_input(
-        "GitHub Token",
+        "GitHub Token *",
         type="password",
-        help="Enter your GitHub personal access token",
+        help="Enter your GitHub personal access token (Required)",
         placeholder="ghp_xxxxxxxxxxxxxxxxxxxx",
     )
-    
-    # Show warnings if credentials are missing
+
+    # Check for required configurations
+    missing_configs = []
+    if not gemini_api_key:
+        missing_configs.append("Gemini API key")
     if not lc_session:
-        st.sidebar.warning("⚠️ LeetCode session token is required for LeetCode MCP tools")
-    
+        missing_configs.append("LeetCode session token")
     if not gh_token:
-        st.sidebar.warning("⚠️ GitHub token is required for GitHub MCP tools")
+        missing_configs.append("GitHub token")
+
+    # Show status based on configuration completeness
+    if missing_configs:
+        st.sidebar.error(
+            "❌ Missing required configurations:\n"
+            + "\n".join([f"\n• {config}" for config in missing_configs])
+            + "\n\n**Please provide all required fields to start chatting.**"
+        )
+        config_valid = False
+    else:
+        st.sidebar.success("✅ All required configurations provided!")
+        config_valid = True
 
     # Create config dictionary
     config = {
         "model": selected_model,
         "debug_mode": debug_mode,
         "show_events": show_events,
+        "gemini_api_key": gemini_api_key,
         "lc_site": lc_site,
         "lc_session": lc_session,
         "gh_token": gh_token,
+        "config_valid": config_valid,
     }
-    
+
     # Update user ID based on current configuration
     update_user_id(config)
 

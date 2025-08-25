@@ -33,13 +33,16 @@ class StreamlitDSAAgent:
         """Get or create DSA Agent instance"""
         model = config["model"]
         debug_mode = config["debug_mode"]
+        gemini_api_key = config["gemini_api_key"]
         lc_site = config["lc_site"]
         lc_session = config["lc_session"]
         gh_token = config["gh_token"]
-        
+
         # Create a unique key for the agent configuration
-        agent_key = f"{model}_{debug_mode}_{lc_site}_{bool(lc_session)}_{bool(gh_token)}"
-        
+        agent_key = (
+            f"{model}_{debug_mode}_{lc_site}_{bool(lc_session)}_{bool(gh_token)}"
+        )
+
         if (
             st.session_state.agent is None
             or st.session_state.get("current_agent_key") != agent_key
@@ -52,6 +55,7 @@ class StreamlitDSAAgent:
                 lc_site=lc_site,
                 lc_session=lc_session,
                 gh_token=gh_token,
+                gemini_api_key=gemini_api_key,
             )
             st.session_state.current_agent_key = agent_key
 
@@ -64,6 +68,17 @@ class StreamlitDSAAgent:
 
         # Setup sidebar and get configuration
         config = setup_sidebar()
+
+        # Show configuration status in main area
+        if not config.get("config_valid", False):
+            st.info(
+                "👈 **Please complete the configuration in the sidebar before starting.**\n\n"
+                "Required configurations:\n"
+                "- **Gemini API Key**: Your Google Gemini API key\n"
+                "- **LeetCode Session**: Your LeetCode session token from browser cookies\n"
+                "- **GitHub Token**: Your GitHub personal access token\n\n"
+                "Once all configurations are provided, you can start chatting with the DSA Agent!"
+            )
 
         # Display existing messages
         display_chat_messages()
@@ -87,6 +102,15 @@ class StreamlitDSAAgent:
 
     def _handle_chat_input(self, config: Dict[str, Any]):
         """Handle user chat input and agent response"""
+        # Check if all required configurations are provided
+        if not config.get("config_valid", False):
+            # Display disabled chat input with helpful message
+            st.chat_input(
+                "Please provide all required configurations in the sidebar to start chatting...",
+                disabled=True,
+            )
+            return
+
         if user_message := st.chat_input(CHAT_INPUT_PLACEHOLDER):
             # Add user message to session state
             st.session_state.messages.append({"role": "user", "content": user_message})
