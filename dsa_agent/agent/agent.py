@@ -6,10 +6,12 @@ from agno.tools.mcp import MultiMCPTools
 from agno.tools.thinking import ThinkingTools
 
 import dsa_agent.config as cfg
-from dsa_agent.agent.memory import agent_memory, agent_storage
+from dsa_agent.agent.memory import initialize_agent_memory, initialize_agent_storage
 from dsa_agent.agent.prompt import AGENT_DESCRIPTION, AGENT_INSTRUCTION
 from dsa_agent.logger import logger
 from dsa_agent.monitor import time_component
+
+from .mcp_url import get_smithery_url
 
 
 class DSAAgent:
@@ -22,6 +24,7 @@ class DSAAgent:
         lc_site: str | None = None,
         lc_session: str | None = None,
         gh_token: str | None = None,
+        gemini_api_key: str | None = None,
     ):
         logger.info(
             f"Initializing DSA Agent for user_id={user_id}, session_id={session_id}, model_id={model_id}, debug_mode={debug_mode}"
@@ -33,6 +36,7 @@ class DSAAgent:
         self.lc_site = lc_site
         self.lc_session = lc_session
         self.gh_token = gh_token
+        self.gemini_api_key = gemini_api_key
 
         logger.debug("Setting up MCP tools for DSA Agent")
         self.mcp_tools = self._get_mcp_tools()
@@ -57,36 +61,31 @@ class DSAAgent:
     @time_component()
     def _get_mcp_tools(self) -> MultiMCPTools:
         logger.debug("Generating MCP URLs for LeetCode and GitHub")
-        
-        # Import the URL generation function and config
-        import dsa_agent.config as cfg
 
-        from .mcp_url import get_smithery_url
-        
-        # Use provided values or fall back to config defaults
-        lc_site = self.lc_site or cfg.LC_SITE
-        lc_session = self.lc_session or cfg.LC_SESSION
-        gh_token = self.gh_token or cfg.GH_TOKEN
-        
+        # Use provided values
+        lc_site = self.lc_site
+        lc_session = self.lc_session
+        gh_token = self.gh_token
+
         # Generate LeetCode MCP URL
         lc_mcp_url = get_smithery_url(
-            base_url=cfg.LC_MCP_BASE_URL, #type: ignore
+            base_url=cfg.LC_MCP_BASE_URL,  # type: ignore
             config={
                 "site": lc_site,
                 "session": lc_session,
             },
-            api_key=cfg.SMITHERY_API_KEY, #type: ignore
-            profile=cfg.SMITHERY_PROFILE, #type: ignore
+            api_key=cfg.SMITHERY_API_KEY,  # type: ignore
+            profile=cfg.SMITHERY_PROFILE,  # type: ignore
         )
-        
+
         # Generate GitHub MCP URL
         gh_mcp_url = get_smithery_url(
-            base_url=cfg.GH_MCP_BASE_URL, #type: ignore
+            base_url=cfg.GH_MCP_BASE_URL,  # type: ignore
             config={"githubPersonalAccessToken": gh_token},
-            api_key=cfg.SMITHERY_API_KEY, #type: ignore
-            profile=cfg.SMITHERY_PROFILE, #type: ignore
+            api_key=cfg.SMITHERY_API_KEY,  # type: ignore
+            profile=cfg.SMITHERY_PROFILE,  # type: ignore
         )
-        
+
         logger.debug(f"LeetCode MCP URL: {lc_mcp_url}")
         logger.debug(f"GitHub MCP URL: {gh_mcp_url}")
 
@@ -118,9 +117,13 @@ class DSAAgent:
 
         logger.info(f"Initializing Gemini model with ID: {model_id}")
         try:
+            # Initialize memory and storage with the user-provided API key
+            agent_memory = initialize_agent_memory(self.gemini_api_key, model_id)
+            agent_storage = initialize_agent_storage()
+
             agent = Agent(
                 name="DSA Agent",
-                model=Gemini(id=model_id, api_key=cfg.GEMINI_API_KEY), #type: ignore
+                model=Gemini(id=model_id, api_key=self.gemini_api_key),
                 description=AGENT_DESCRIPTION,
                 instructions=[AGENT_INSTRUCTION],
                 user_id=user_id,
@@ -285,7 +288,9 @@ class DSAAgent:
                         event_data.update(
                             {
                                 "tool": self._safe_get_tool_info(tool),
-                                "result": tool.result if tool and hasattr(tool, "result") else None,
+                                "result": tool.result
+                                if tool and hasattr(tool, "result")
+                                else None,
                             }
                         )
                         content = {"event": "tool_call_completed", "data": event_data}
